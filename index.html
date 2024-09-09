@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Knight Dodge Game</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-image: url('https://images.wallpapersden.com/image/download/majestic-mountain-hiking-trail_bmdlZWuUmZqaraWkpJRoam1prWdlaW0.jpg');
+            background-size: cover;
+            font-family: Arial, sans-serif;
+        }
+
+        #gameCanvas {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        .knight {
+            width: 50px;
+            height: 50px;
+            background-image: url('https://e7.pngegg.com/pngimages/932/717/png-clipart-logo-knight-shield-knight-emblem-shield.png');
+            background-size: cover;
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .rock {
+            width: 40px;
+            height: 40px;
+            background-image: url('https://www.pngkey.com/png/full/0-7799_stones-and-rocks-png-image-rock-transparent-background.png');
+            background-size: cover;
+            position: absolute;
+            top: 0;
+        }
+
+        #victoryScreen, #gameOverScreen {
+            display: none;
+            position: absolute;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            font-size: 36px;
+            text-align: center;
+            padding-top: 40vh;
+        }
+
+        .retryButton {
+            margin-top: 20px;
+            font-size: 24px;
+            padding: 10px 20px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div id="gameCanvas">
+        <div class="knight" id="knight"></div>
+    </div>
+    <div id="victoryScreen">
+        Well done! Treasure is near!
+    </div>
+    <div id="gameOverScreen">
+        Game Over! You got hit by a rock.
+        <br><button class="retryButton" onclick="retryGame()">Retry</button>
+    </div>
+
+    <script>
+        const knight = document.getElementById('knight');
+        const gameCanvas = document.getElementById('gameCanvas');
+        const victoryScreen = document.getElementById('victoryScreen');
+        const gameOverScreen = document.getElementById('gameOverScreen');
+        let rocksDodged = 0;
+        const totalRocks = 10;
+        let gameOver = false;
+
+        document.addEventListener('keydown', moveKnight);
+
+        function moveKnight(event) {
+            if (gameOver) return;
+            const left = knight.offsetLeft;
+            if (event.key === 'ArrowLeft' && left > 0) {
+                knight.style.left = left - 20 + 'px';
+            } else if (event.key === 'ArrowRight' && left + knight.offsetWidth < gameCanvas.offsetWidth) {
+                knight.style.left = left + 20 + 'px';
+            }
+        }
+
+        function createRock() {
+            const rock = document.createElement('div');
+            rock.classList.add('rock');
+            rock.style.left = Math.random() * (gameCanvas.offsetWidth - 40) + 'px';
+            gameCanvas.appendChild(rock);
+
+            let rockInterval = setInterval(() => {
+                rock.style.top = rock.offsetTop + 5 + 'px';
+
+                if (rock.offsetTop + rock.offsetHeight >= knight.offsetTop &&
+                    rock.offsetLeft < knight.offsetLeft + knight.offsetWidth &&
+                    rock.offsetLeft + rock.offsetWidth > knight.offsetLeft) {
+                    clearInterval(rockInterval);
+                    endGame(false);
+                }
+
+                if (rock.offsetTop >= gameCanvas.offsetHeight) {
+                    gameCanvas.removeChild(rock);
+                    rocksDodged++;
+                    clearInterval(rockInterval);
+
+                    if (rocksDodged === totalRocks) {
+                        endGame(true);
+                    } else {
+                        createRock();
+                    }
+                }
+            }, 20);
+        }
+
+        function endGame(isVictory) {
+            gameOver = true;
+            if (isVictory) {
+                victoryScreen.style.display = 'block';
+            } else {
+                gameOverScreen.style.display = 'block';
+            }
+        }
+
+        function retryGame() {
+            rocksDodged = 0;
+            gameOver = false;
+            gameOverScreen.style.display = 'none';
+            victoryScreen.style.display = 'none';
+            const rocks = document.querySelectorAll('.rock');
+            rocks.forEach(rock => rock.remove());
+            startGame();
+        }
+
+        function startGame() {
+            for (let i = 0; i < totalRocks; i++) {
+                setTimeout(createRock, i * 1000);
+            }
+        }
+
+        startGame();
+    </script>
+</body>
+</html>
