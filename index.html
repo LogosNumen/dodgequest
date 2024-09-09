@@ -9,7 +9,7 @@
             margin: 0;
             padding: 0;
             overflow: hidden;
-            background-image: url('https://media.istockphoto.com/id/1158882333/photo/rocky-path.jpg'); /* Stock rocky path background */
+            background-image: url('https://media.istockphoto.com/id/1158882333/photo/rocky-path.jpg'); /* Rocky path background */
             background-size: cover;
             font-family: Arial, sans-serif;
         }
@@ -21,24 +21,38 @@
         }
 
         .knight {
-            width: 50px;
-            height: 50px;
+            width: 40px; /* Smaller knight */
+            height: 40px;
             background-image: url('https://e7.pngegg.com/pngimages/932/717/png-clipart-logo-knight-shield-knight-emblem-shield.png');
             background-size: cover;
             position: absolute;
             top: 80%;
             left: 50%;
             transform: translateX(-50%);
-            transition: left 0.1s ease;
+            border: 3px solid red; /* Red highlighted box */
+            transition: left 0.2s ease; /* Slight sliding effect */
         }
 
         .rock {
-            width: 40px;
-            height: 40px;
+            width: 60px; /* Larger rocks */
+            height: 60px;
             background-image: url('https://www.pngkey.com/png/full/0-7799_stones-and-rocks-png-image-rock-transparent-background.png');
             background-size: cover;
             position: absolute;
             top: 0;
+        }
+
+        #gameOverScreen {
+            display: none;
+            position: absolute;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: red;
+            font-size: 48px;
+            font-weight: bold;
+            text-align: center;
+            padding-top: 40vh;
         }
     </style>
 </head>
@@ -46,15 +60,17 @@
     <div id="gameCanvas">
         <div class="knight" id="knight"></div>
     </div>
+    <div id="gameOverScreen">You fucking suck!!</div>
 
     <script>
         const knight = document.getElementById('knight');
         const gameCanvas = document.getElementById('gameCanvas');
+        const gameOverScreen = document.getElementById('gameOverScreen');
         let rocksDodged = 0;
         const totalRocksToDodge = 30;
         let gameOver = false;
 
-        // Follow mouse movement with delay
+        // Follow mouse movement with slight sliding effect
         document.addEventListener('mousemove', (event) => {
             if (!gameOver) {
                 const mouseX = event.clientX;
@@ -66,7 +82,7 @@
         function createRock() {
             const rock = document.createElement('div');
             rock.classList.add('rock');
-            rock.style.left = Math.random() * (gameCanvas.offsetWidth - 40) + 'px';
+            rock.style.left = Math.random() * (gameCanvas.offsetWidth - 60) + 'px'; // Adjusted for larger rocks
             gameCanvas.appendChild(rock);
 
             let rockInterval = setInterval(() => {
@@ -77,7 +93,7 @@
                     rock.offsetLeft < knight.offsetLeft + knight.offsetWidth &&
                     rock.offsetLeft + rock.offsetWidth > knight.offsetLeft) {
                     clearInterval(rockInterval);
-                    endGame(false);
+                    endGame();
                 }
 
                 if (rock.offsetTop >= gameCanvas.offsetHeight) {
@@ -86,7 +102,7 @@
                     clearInterval(rockInterval);
 
                     if (rocksDodged === totalRocksToDodge) {
-                        endGame(true);
+                        window.location.href = 'https://www.instagram.com/friskry/';
                     } else {
                         createRock();
                     }
@@ -94,30 +110,16 @@
             }, 20);
         }
 
-        // End game when knight dodges 30 rocks or gets hit
-        function endGame(isVictory) {
+        // End game when knight is hit
+        function endGame() {
             gameOver = true;
-            if (isVictory) {
-                window.location.href = 'https://www.instagram.com/friskry/';
-            } else {
-                alert('Game Over! You got hit by a rock.');
-                resetGame();
-            }
+            gameOverScreen.style.display = 'block';
         }
 
-        // Reset game
-        function resetGame() {
-            rocksDodged = 0;
-            gameOver = false;
-            const rocks = document.querySelectorAll('.rock');
-            rocks.forEach(rock => rock.remove());
-            startGame();
-        }
-
-        // Start game and create multiple rocks
+        // Start game and create more rocks
         function startGame() {
             for (let i = 0; i < totalRocksToDodge; i++) {
-                setTimeout(createRock, i * 500); // More rocks fall frequently
+                setTimeout(createRock, i * 400); // Rocks falling more frequently
             }
         }
 
