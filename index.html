@@ -9,7 +9,7 @@
             margin: 0;
             padding: 0;
             overflow: hidden;
-            background-image: url('https://images.wallpapersden.com/image/download/forest-trees-trail_Zmlua2yUmZqaraWkpJRnamtlrWZpaWU.jpg');
+            background-image: url('https://media.istockphoto.com/id/1158882333/photo/rocky-path.jpg'); /* Stock rocky path background */
             background-size: cover;
             font-family: Arial, sans-serif;
         }
@@ -26,9 +26,10 @@
             background-image: url('https://e7.pngegg.com/pngimages/932/717/png-clipart-logo-knight-shield-knight-emblem-shield.png');
             background-size: cover;
             position: absolute;
-            bottom: 20px;
+            top: 80%;
             left: 50%;
             transform: translateX(-50%);
+            transition: left 0.1s ease;
         }
 
         .rock {
@@ -39,60 +40,29 @@
             position: absolute;
             top: 0;
         }
-
-        #victoryScreen, #gameOverScreen {
-            display: none;
-            position: absolute;
-            width: 100vw;
-            height: 100vh;
-            background-color: rgba(0, 0, 0, 0.8);
-            color: white;
-            font-size: 36px;
-            text-align: center;
-            padding-top: 40vh;
-        }
-
-        .retryButton {
-            margin-top: 20px;
-            font-size: 24px;
-            padding: 10px 20px;
-            cursor: pointer;
-        }
     </style>
 </head>
 <body>
     <div id="gameCanvas">
         <div class="knight" id="knight"></div>
     </div>
-    <div id="victoryScreen">
-        Well done! Treasure is near!
-    </div>
-    <div id="gameOverScreen">
-        Game Over! You got hit by a rock.
-        <br><button class="retryButton" onclick="retryGame()">Retry</button>
-    </div>
 
     <script>
         const knight = document.getElementById('knight');
         const gameCanvas = document.getElementById('gameCanvas');
-        const victoryScreen = document.getElementById('victoryScreen');
-        const gameOverScreen = document.getElementById('gameOverScreen');
         let rocksDodged = 0;
-        const totalRocks = 10;
+        const totalRocksToDodge = 30;
         let gameOver = false;
 
-        document.addEventListener('keydown', moveKnight);
-
-        function moveKnight(event) {
-            if (gameOver) return;
-            const left = knight.offsetLeft;
-            if (event.key === 'ArrowLeft' && left > 0) {
-                knight.style.left = left - 20 + 'px';
-            } else if (event.key === 'ArrowRight' && left + knight.offsetWidth < gameCanvas.offsetWidth) {
-                knight.style.left = left + 20 + 'px';
+        // Follow mouse movement with delay
+        document.addEventListener('mousemove', (event) => {
+            if (!gameOver) {
+                const mouseX = event.clientX;
+                knight.style.left = `${mouseX - knight.offsetWidth / 2}px`;
             }
-        }
+        });
 
+        // Create rocks falling from random positions
         function createRock() {
             const rock = document.createElement('div');
             rock.classList.add('rock');
@@ -102,6 +72,7 @@
             let rockInterval = setInterval(() => {
                 rock.style.top = rock.offsetTop + 5 + 'px';
 
+                // Check collision between knight and rocks
                 if (rock.offsetTop + rock.offsetHeight >= knight.offsetTop &&
                     rock.offsetLeft < knight.offsetLeft + knight.offsetWidth &&
                     rock.offsetLeft + rock.offsetWidth > knight.offsetLeft) {
@@ -114,7 +85,7 @@
                     rocksDodged++;
                     clearInterval(rockInterval);
 
-                    if (rocksDodged === totalRocks) {
+                    if (rocksDodged === totalRocksToDodge) {
                         endGame(true);
                     } else {
                         createRock();
@@ -123,28 +94,30 @@
             }, 20);
         }
 
+        // End game when knight dodges 30 rocks or gets hit
         function endGame(isVictory) {
             gameOver = true;
             if (isVictory) {
-                victoryScreen.style.display = 'block';
+                window.location.href = 'https://www.instagram.com/friskry/';
             } else {
-                gameOverScreen.style.display = 'block';
+                alert('Game Over! You got hit by a rock.');
+                resetGame();
             }
         }
 
-        function retryGame() {
+        // Reset game
+        function resetGame() {
             rocksDodged = 0;
             gameOver = false;
-            gameOverScreen.style.display = 'none';
-            victoryScreen.style.display = 'none';
             const rocks = document.querySelectorAll('.rock');
             rocks.forEach(rock => rock.remove());
             startGame();
         }
 
+        // Start game and create multiple rocks
         function startGame() {
-            for (let i = 0; i < totalRocks; i++) {
-                setTimeout(createRock, i * 1000);
+            for (let i = 0; i < totalRocksToDodge; i++) {
+                setTimeout(createRock, i * 500); // More rocks fall frequently
             }
         }
 
