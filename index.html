@@ -6,12 +6,8 @@
     <title>Knight Dodge Game</title>
     <style>
         body, html {
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
-            background-image: url('https://media.istockphoto.com/id/1158882333/photo/rocky-path.jpg'); /* Rocky path background */
+            backgroundImage = "url('https://images.wallpapersden.com/image/download/forest-trees-trail_Zmlua2yUmZqaraWkpJRnamtlrWZpaWU.jpg')"
             background-size: cover;
-            font-family: Arial, sans-serif;
         }
 
         #gameCanvas {
@@ -21,20 +17,20 @@
         }
 
         .knight {
-            width: 40px; /* Smaller knight */
+            width: 40px;
             height: 40px;
-            background-image: url('https://e7.pngegg.com/pngimages/932/717/png-clipart-logo-knight-shield-knight-emblem-shield.png');
+            background-image: url('https://toppng.com/uploads/preview/army-black-knights-logo-png-11553951777wmhrx0kzog.png');
             background-size: cover;
             position: absolute;
             top: 80%;
             left: 50%;
             transform: translateX(-50%);
-            border: 3px solid red; /* Red highlighted box */
-            transition: left 0.2s ease; /* Slight sliding effect */
+            border: 3px solid red;
+            transition: left 0.05s ease; /* Faster sliding effect */
         }
 
         .rock {
-            width: 60px; /* Larger rocks */
+            width: 60px;
             height: 60px;
             background-image: url('https://www.pngkey.com/png/full/0-7799_stones-and-rocks-png-image-rock-transparent-background.png');
             background-size: cover;
@@ -67,10 +63,10 @@
         const gameCanvas = document.getElementById('gameCanvas');
         const gameOverScreen = document.getElementById('gameOverScreen');
         let rocksDodged = 0;
-        const totalRocksToDodge = 30;
+        const totalRocksToDodge = 100;
         let gameOver = false;
 
-        // Follow mouse movement with slight sliding effect
+        // Knight follows the mouse with faster sliding
         document.addEventListener('mousemove', (event) => {
             if (!gameOver) {
                 const mouseX = event.clientX;
@@ -78,17 +74,28 @@
             }
         });
 
-        // Create rocks falling from random positions
+        // Create rocks with slight tracking to the knight
         function createRock() {
             const rock = document.createElement('div');
             rock.classList.add('rock');
-            rock.style.left = Math.random() * (gameCanvas.offsetWidth - 60) + 'px'; // Adjusted for larger rocks
+            let rockX = Math.random() * (gameCanvas.offsetWidth - 60);
+            rock.style.left = `${rockX}px`;
             gameCanvas.appendChild(rock);
 
             let rockInterval = setInterval(() => {
-                rock.style.top = rock.offsetTop + 5 + 'px';
+                // Adjust rock X position to track knight
+                const knightX = knight.offsetLeft + knight.offsetWidth / 2;
+                if (rockX < knightX) {
+                    rockX += 2; // Move rock slightly towards knight
+                } else if (rockX > knightX) {
+                    rockX -= 2;
+                }
+                rock.style.left = `${rockX}px`;
 
-                // Check collision between knight and rocks
+                // Move the rock down faster
+                rock.style.top = rock.offsetTop + 7 + 'px';
+
+                // Check if rock hits the knight
                 if (rock.offsetTop + rock.offsetHeight >= knight.offsetTop &&
                     rock.offsetLeft < knight.offsetLeft + knight.offsetWidth &&
                     rock.offsetLeft + rock.offsetWidth > knight.offsetLeft) {
@@ -96,6 +103,7 @@
                     endGame();
                 }
 
+                // Remove rock if it reaches bottom
                 if (rock.offsetTop >= gameCanvas.offsetHeight) {
                     gameCanvas.removeChild(rock);
                     rocksDodged++;
@@ -107,19 +115,30 @@
                         createRock();
                     }
                 }
-            }, 20);
+            }, 15); // Rocks fall faster
         }
 
         // End game when knight is hit
         function endGame() {
             gameOver = true;
             gameOverScreen.style.display = 'block';
+            setTimeout(resetGame, 2000); // Restart game after 2 seconds
         }
 
-        // Start game and create more rocks
+        // Reset game
+        function resetGame() {
+            rocksDodged = 0;
+            gameOver = false;
+            gameOverScreen.style.display = 'none';
+            const rocks = document.querySelectorAll('.rock');
+            rocks.forEach(rock => rock.remove());
+            startGame();
+        }
+
+        // Start game and create rocks less frequently but faster
         function startGame() {
             for (let i = 0; i < totalRocksToDodge; i++) {
-                setTimeout(createRock, i * 400); // Rocks falling more frequently
+                setTimeout(createRock, i * 800); // Fewer rocks, but falling faster
             }
         }
 
